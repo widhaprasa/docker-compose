@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  mosquitto:
+    image: widhaprasa/mosquitto:v1.6.9
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto/etc.d:/etc/mosquitto.d
+      - ./mosquitto/data:/var/lib/mosquitto
+      - ./mosquitto/log:/mosquitto/log
+    links:
+      - db:db
+    # ports:
+    #   - '1883:1883'
+    networks:
+      - network
+    depends_on:
+      - db
+
+  service:
+    image: widhaprasa/mosquitto-auth-plug-postgres-service:1.1.0
+    restart: unless-stopped
+    environment:
+      - PG_HOST=db
+    links:
+      - db:db
+    networks:
+      - network
+    depends_on:
+      - db
+
+  db:
+    image: widhaprasa/mosquitto-postgres:9.6.16-alpine
+    restart: unless-stopped
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    networks:
+      - network
+
+networks:
+  network:
